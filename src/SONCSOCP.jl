@@ -4,7 +4,6 @@ using JuMP
 using Mosek
 using MosekTools
 using LinearAlgebra
-using TypedPolynomials
 using MultivariatePolynomials
 
 export soncsocp

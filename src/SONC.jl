@@ -3,10 +3,10 @@ n=length(x)
 mon=monomials(f)
 coe=coefficients(f)
 lsupp=length(mon)
-supp=zeros(Int8,n,lsupp)
+supp=zeros(Int,n,lsupp)
 for i=1:lsupp
     for j=1:n
-        supp[j,i]=degree(mon[i],x[j])
+        supp[j,i]=MultivariatePolynomials.degree(mon[i],x[j])
     end
 end
 pos,neg,coe=posneg!(n,supp,coe)
@@ -56,8 +56,7 @@ end
 supp1=sortslices(supp1,dims=2)
 supp1=unique(supp1,dims=2)
 lsupp1=size(supp1,2)
-cons=Array{Any}(undef, lsupp1)
-cons.=AffExpr(0)
+cons=[AffExpr(0) for i=1:lsupp1]
 for i=1:num
     Locb=bfind(supp1,lsupp1,B[:,2,i],n)
     cons[Locb]+=2*socp[i][1]
@@ -98,21 +97,19 @@ end
 
 function posneg!(n,supp,coe)
 lo=size(supp,2)
-posb=[0]
-negb=[0]
+posb=[]
+negb=[]
 for i=1:lo
     bi=supp[:,i]
     if sum(Int[iseven(bi[j]) for j=1:n])==n&&coe[i]>0
-       posb=[posb i]
+       posb=push!(posb,i)
     else
-       negb=[negb i]
+       negb=push!(negb,i)
        if coe[i]>0
           coe[i]=-coe[i]
        end
     end
 end
-posb=posb[2:end]
-negb=negb[2:end]
 return supp[:,posb],supp[:,negb],coe
 end
 
@@ -133,35 +130,33 @@ lpos=size(pos,2)
 V=neg
 k=0
 lneg=size(neg,2)
-treb=Array{Any}(undef,lpos+lneg)
-lambuda=Array{Any}(undef,lpos+lneg)
-inset=zeros(UInt8,n,1)
+treb=Array{Array{UInt16,1}}(undef,lpos+lneg)
+lambuda=Array{Array{Rational,2}}(undef,lpos+lneg)
+inset=zeros(Int,n,1)
 while size(U,2)>0&&size(V,2)>0
     lU=size(U,2)
     k=k+1
     inset=[inset V[:,1]]
     loc=bfind(pos,lpos,U[:,1],n)
     bary=simsel(V[:,1],pos,loc)
-    treb[k]=[0]
+    treb[k]=[]
     for i=1:lpos
         if bary[i]>0.000001
-           treb[k]=[treb[k] i]
+           push!(treb[k],i)
         end
     end
-    treb[k]=treb[k][2:end]
     ltreb=length(treb[k])
     A=vcat(pos[:,treb[k]],ones(Int,1,ltreb))
     b=vcat(V[:,1],Int(1))
     lambuda[k]=LinearSolve(A,b,ltype=ltype)
-    del=[0]
+    del=[]
     for i=1:ltreb
         bi=pos[:,treb[k][i]]
         loc=bfind(U,lU,bi,n)
         if loc!=0
-           del=[del loc]
+           push!(del,loc)
         end
     end
-    del=del[2:end]
     ldel=length(del)
     Ub=[i for i=1:lU]
     for i=1:ldel
@@ -182,26 +177,24 @@ if size(V,2)>0
         loc=bfind(pos,lpos,U[:,1],n)
         bary=simsel(V[:,1],pos,loc)
         k=k+1
-        treb[k]=[0]
+        treb[k]=[]
         for i=1:lpos
             if bary[i]>0.000001
-               treb[k]=[treb[k] i]
+               push!(treb[k],i)
             end
         end
-        treb[k]=treb[k][2:end]
         ltreb=length(treb[k])
         A=vcat(pos[:,treb[k]],ones(Int,1,ltreb))
         b=vcat(V[:,1],Int(1))
         lambuda[k]=LinearSolve(A,b,ltype=ltype)
-        del=[0]
+        del=[]
         for i=1:ltreb
             bi=pos[:,treb[k][i]]
             loc=bfind(U,lU,bi,n)
             if loc!=0
-               del=[del loc]
+               push!(del,loc)
             end
         end
-        del=del[2:end]
         ldel=length(del)
         Ub=[i for i=1:lU]
         for i=1:ldel
@@ -222,26 +215,24 @@ else
         loc=bfind(pos,lpos,U[:,1],n)
         bary=simsel(V[:,1],pos,loc)
         k=k+1
-        treb[k]=[0]
+        treb[k]=[]
         for i=1:lpos
             if bary[i]>0.000001
-               treb[k]=[treb[k] i]
+                push!(treb[k],i)
             end
         end
-        treb[k]=treb[k][2:end]
         ltreb=length(treb[k])
         A=vcat(pos[:,treb[k]],ones(Int,1,ltreb))
         b=vcat(V[:,1],Int(1))
         lambuda[k]=LinearSolve(A,b,ltype=ltype)
-        del=[0]
+        del=[]
         for i=1:ltreb
             bi=pos[:,treb[k][i]]
             loc=bfind(U,lU,bi,n)
             if loc!=0
-               del=[del loc]
+               push!(del,loc)
             end
         end
-        del=del[2:end]
         ldel=length(del)
         Ub=[i for i=1:lU]
         for i=1:ldel
