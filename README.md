@@ -26,14 +26,14 @@ julia> @polyvar x[1:2]
 f=x[1]^4+x[2]^4-x[1]*x[2]
 julia> opt,sol=soncsocp(f,x)
 ```
-By default, SONCSOCP uses Int64 as the integer type. You can change it by setting ltype='Int128' (for solving linear equations) and itype='Int128' (for computing mediated sets).
+By default, SONCSOCP uses Int64 as the integer type. You can change it by setting ltype="Int128" (for solving linear equations) or itype="Int128" (for computing mediated sets) if an overflow occurs.
 ```Julia
-julia> opt,data=soncsocp(f,x,ltype='Int128',itype='Int128')
+julia> opt,data=soncsocp(f,x,ltype="Int128",itype="Int128")
 ```
 
-If the Newton polytope of f is a scaled standard simplex, you can set ntype='standard' so that the function will be more efficient.
+If the Newton polytope of f is a scaled standard simplex, you can set ntype="standard" so that the function will be more efficient.
 ```Julia
-julia> opt,data=soncsocp(f,x,ntype='standard')
+julia> opt,data=soncsocp(f,x,ntype="standard")
 ```
 
 ## Reference
