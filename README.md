@@ -31,10 +31,13 @@ By default, SONCSOCP uses Int64 as the integer type. You can change it by settin
 julia> opt,data=soncsocp(f,x,ltype="Int128",itype="Int128")
 ```
 
-If the Newton polytope of f is a scaled standard simplex, you can set ntype="standard" so that the function will be more efficient.
+If the Newton polytope of f is a scaled standard simplex, you can set ntype="standard" so that the implementation will be more efficient.
 ```Julia
 julia> opt,data=soncsocp(f,x,ntype="standard")
 ```
 
-## Reference
-If there are any problems, you can contact Jie Wang: wangjie212@mails.ucas.ac.cn.
+## References
+[1] [A second order cone characterization for sums of nonnegative circuits](https://arxiv.org/abs/1906.06179)  
+
+## Contact
+[Jie Wang](https://wangjie212.github.io/jiewang/): jwang@laas.fr
