@@ -14,7 +14,7 @@ pkg> add https://github.com/wangjie212/SONCSOCP
 SONCSOCP has been tested on WINDOW 10, Julia 1.6.2, and MOSEK 9.0.
 ## Usage
 SONCSOCP computes a lower bound for the unconstrained polynomial optimization problem:
-$$\text{Inf}\ \{f(\mathbf{x}): \mathbf{x}\in\mathbb{R}^n\},$$
+$$\text{Inf}\ \lbrace f(\mathbf{x}): \mathbf{x}\in\mathbb{R}^n\rbrace,$$
 where $f$ is a polynomial in variables $x_1,\ldots,x_n$.
 
 Taking $f=1+x_1^4+x_2^4-x_1x_2$ as an example, to compute a SONC lower bound for $f$, run
