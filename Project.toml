@@ -1,0 +1,12 @@
+name = "SONCSOCP"
+uuid = "a0de9320-30b0-11ea-21a8-c5ea2540dd66"
+authors = ["jwang <wangjie212@amss.ac.cn>"]
+version = "0.2.0"
+
+[deps]
+ECOS = "e2685f51-7e38-5353-a97d-a921fd2c8199"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Mosek = "6405355b-0ac2-5fba-af84-adbd65488c0e"
+MosekTools = "1ec41992-ff65-5c91-ac43-2df89e9693a4"
+MultivariatePolynomials = "102ac46a-7ee4-5c85-9060-abc95bfdeaa3"
