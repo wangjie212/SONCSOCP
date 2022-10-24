@@ -1,12 +1,12 @@
 function dectobin(n)
-    seq = UInt8[]
+    seq = UInt16[]
     i = 0
     while n > 0
         if isodd(n)
             push!(seq, i)
-            n = Int((n-1)/2)
+            n = div(n-1, 2)
         else
-            n = Int(n/2)
+            n = div(n, 2)
         end
         i += 1
     end
@@ -20,21 +20,21 @@ function tldeg(a, m)
     i = 0
     while iseven(a)
         i += 1
-        a = Int(a/2)
+        a = div(a, 2)
     end
-    return UInt8(i)
+    return UInt16(i)
 end
 
 function GreedyPowertwo(s)
     s = copy(s)
     v = length(s) + 1
     w = v
-    sub = UInt8[i for i=1:length(s)]
+    sub = UInt16[i for i=1:length(s)]
     p = sum(s)
-    m = UInt8(ceil(log(2, p)))
-    c = 2^(m-1)
+    m = UInt16(ceil(log(2, p)))
+    c = typeof(s[1])(2)^(m-1)
     soc = Vector{UInt16}[]
-    for k = 1:2^m
+    for iter = 1:1e4
         w += 1
         flag = 0
         for i = 1:length(s)-1, j = i+1:length(s)
@@ -77,7 +77,7 @@ function GreedyPowertwo(s)
                     s[t] -= c
                 end
                 v = w
-                c = Int(c/2)
+                c = div(c, 2)
                 continue
             end
             if r > 0
@@ -102,8 +102,8 @@ function GreedyPowertwo(s)
                 push!(sub, v)
                 p += r
             end
-            co = UInt8[]
-            cc = Vector{UInt8}[]
+            co = UInt16[]
+            cc = Vector{UInt16}[]
             ms = tldeg.(s, m)
             md = minimum(ms)
             for i = 1:length(s)-1, j = i+1:length(s)
@@ -134,7 +134,7 @@ function GreedyPowertwo(s)
                 push!(soc, [w-1;w;v])
                 v = w
                 p = c
-                c = Int(c/2)
+                c = div(c, 2)
             end
         end
     end
@@ -144,15 +144,15 @@ function GreedyCommone(s)
     s = copy(s)
     v = length(s) + 1
     p = sum(s)
-    m = UInt8(ceil(log(2, p)))
-    c = 2^(m-1)
+    m = UInt16(ceil(log(2, p)))
+    c = typeof(s[1])(2)^(m-1)
     r = 2*c - p
     if r > 0
         push!(s, r)
         p += r
     end
     soc = Vector{UInt16}[]
-    for k = 1:2c
+    for k = 1:1e4
         co = UInt16[]
         cc = Vector{UInt16}[]
         for i = 1:length(s)-1, j = i+1:length(s)
@@ -163,7 +163,7 @@ function GreedyCommone(s)
         end
         mcc = cc[argmax(co)]
         cmo = intersect(dectobin(s[mcc[1]]), dectobin(s[mcc[2]]))
-        α = sum(2 .^cmo)
+        α = sum(typeof(s[1])(2) .^cmo)
         push!(s, 2*α)
         s[mcc[1]] -= α
         s[mcc[2]] -= α

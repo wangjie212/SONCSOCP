@@ -1,4 +1,4 @@
-function soncsocp(f, x; method="DPCP", alg="GPT", solver="Mosek", ntype="general", itype=Int, QUIET=false)
+function soncsocp(f, x; method="DPCP", alg="GPT", solver="Mosek", ntype="general", ltype=Int, itype=Int, QUIET=false)
     n = length(x)
     mon = monomials(f)
     coe = coefficients(f)
@@ -26,7 +26,7 @@ function soncsocp(f, x; method="DPCP", alg="GPT", solver="Mosek", ntype="general
             else
                 b = vcat(supp[:,neg[i]], UInt16(1))
                 A = vcat(supp[:,pos], ones(UInt16, 1, length(pos)))
-                lamb = LinearSolve(A, b, itype=itype)
+                lamb = LinearSolve(A, b, ltype=ltype)
                 if method == "SOCP"
                     λ[i] = lamb .* lcm(denominator.(lamb))
                 else
@@ -35,7 +35,7 @@ function soncsocp(f, x; method="DPCP", alg="GPT", solver="Mosek", ntype="general
             end
         end
     else
-        inset,trellis,λ = simplexcover(supp, pos, neg, method=method, itype=itype)
+        inset,trellis,λ = simplexcover(supp, pos, neg, method=method, ltype=ltype, itype=itype)
     end
     if solver == "Mosek"
         model = Model(optimizer_with_attributes(Mosek.Optimizer))
@@ -106,6 +106,7 @@ end
 function simsel(inner, pos, loc)
     model = Model(optimizer_with_attributes(Mosek.Optimizer))
     set_optimizer_attribute(model, MOI.Silent(), true)
+    set_optimizer_attributes(model, "OPTIMIZER" => 3)
     @variable(model, x[1:size(pos,2)]>=0)
     @constraint(model, pos*x.==inner)
     @constraint(model, sum(x)==1)
@@ -114,45 +115,45 @@ function simsel(inner, pos, loc)
     return value.(x)
 end
 
-function simplexcover(supp, pos, neg; method="SOCP", itype=Int)
+function simplexcover(supp, pos, neg; method="SOCP", ltype=Int, itype=Int)
     treb = Vector{UInt16}[]
     λ = Vector{itype}[]
     inset = UInt16[]
     U = pos
     V = neg
     while length(U) > 0 && length(V) > 0
-        U,V = NewCirc!(supp, pos, U, V, inset, treb, λ, method=method, itype=itype)
+        U,V = NewCirc!(supp, pos, U, V, inset, treb, λ, method=method, ltype=ltype)
     end
     if length(V) > 0
         while length(V) > 0
             if length(U) == 0
                 U = pos
             end
-            U,V = NewCirc!(supp, pos, U, V, inset, treb, λ, method=method, itype=itype)
+            U,V = NewCirc!(supp, pos, U, V, inset, treb, λ, method=method, ltype=ltype)
         end
     else
         while length(U) > 0
             if length(V) == 0
                 V = neg
             end
-            U,V = NewCirc!(supp, pos, U, V, inset, treb, λ, method=method, itype=itype)
+            U,V = NewCirc!(supp, pos, U, V, inset, treb, λ, method=method, ltype=ltype)
         end
     end
     return inset,treb,λ
 end
 
-function NewCirc!(supp, pos, U, V, inset, treb, λ; method="SOCP", itype=Int)
+function NewCirc!(supp, pos, U, V, inset, treb, λ; method="SOCP", ltype=Int)
     push!(inset, V[1])
     loc = bfind(pos, length(pos), U[1])
     bary = simsel(supp[:,V[1]], supp[:,pos], loc)
-    push!(treb, pos[[bary[i]>=1e-6 for i=1:length(pos)]])
+    push!(treb, pos[[bary[i]>=1e-4 for i=1:length(pos)]])
     if method == "SOCP"
         A = vcat(supp[:,treb[end]], ones(UInt16, 1, length(treb[end])))
         b = vcat(supp[:,V[1]], UInt16(1))
-        lamb = LinearSolve(A, b, itype=itype)
+        lamb = LinearSolve(A, b, ltype=ltype)
         push!(λ, lamb .* lcm(denominator.(lamb)))
     else
-        push!(λ, bary[[bary[i]>=1e-6 for i=1:length(pos)]])
+        push!(λ, bary[[bary[i]>=1e-4 for i=1:length(pos)]])
     end
     U = setdiff(U, treb[end])
     V = V[2:end]
@@ -176,12 +177,12 @@ function bfind(A, l, a)
     return 0
 end
 
-function LinearSolve(A, b; itype=Int)
+function LinearSolve(A, b; ltype=Int)
     n = size(A, 2)
-    A = Rational{itype}.(A)
-    b = Rational{itype}.(b)
-    x = zeros(Rational{itype}, n)
-    y = zeros(Rational{itype}, n)
+    A = Rational{ltype}.(A)
+    b = Rational{ltype}.(b)
+    x = zeros(Rational{ltype}, n)
+    y = zeros(Rational{ltype}, n)
     F = lu(A)
     b = b[F.p]
     A = F.L[1:n,:] + F.U - Matrix(I, n, n)
